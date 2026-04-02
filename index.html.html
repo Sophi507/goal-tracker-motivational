@@ -509,6 +509,70 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 
 let currentUser=null;
 
+function decodeJWT(token){
+  try{
+    const base64=token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+    const json=decodeURIComponent(atob(base64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    return JSON.parse(json);
+  }catch(e){return{};}
+}
+
+function getUID(){
+  if(currentSession?.user?.id)return currentSession.user.id;
+  if(currentSession?.access_token){const jwt=decodeJWT(currentSession.access_token);if(jwt.sub)return jwt.sub;}
+  return localStorage.getItem('uid')||'';
+}
+
+function getToken(){return currentSession?.access_token||SB_KEY;}
+
+async function sbFetch(path,opts={}){
+  const headers={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+getToken(),'Prefer':'return=representation'};
+  const res=await fetch(SB_URL+'/rest/v1/'+path,{headers,...opts});
+  if(!res.ok){const e=await res.text();throw new Error(e);}
+  const txt=await res.text();
+  return txt?JSON.parse(txt):null;
+}
+
+async function signIn(email,password){
+  const res=await fetch(SB_URL+'/auth/v1/token?grant_type=password',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY},body:JSON.stringify({email,password})});
+  const d=await res.json();
+  if(d.error||d.error_description)throw new Error(d.error_description||d.error||'Login failed');
+  if(!d.user||!d.user.id){const jwt=decodeJWT(d.access_token);d.user={id:jwt.sub||'',email};}
+  return d;
+}
+
+async function signUp(email,password){
+  const res=await fetch(SB_URL+'/auth/v1/signup',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY},body:JSON.stringify({email,password})});
+  const d=await res.json();
+  if(d.error)throw new Error(d.error.message||'Sign up failed');
+  if(d.access_token&&(!d.user||!d.user.id)){const jwt=decodeJWT(d.access_token);d.user={id:jwt.sub||'',email};}
+  return d;
+}
+
+async function signOut(){
+  if(pollInterval){clearInterval(pollInterval);pollInterval=null;}
+  try{
+    if(currentSession?.access_token)
+      await fetch(SB_URL+'/auth/v1/logout',{method:'POST',headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+currentSession.access_token}});
+  }catch(e){}
+  currentSession=null;
+  localStorage.removeItem('sb_session');
+  localStorage.removeItem('uid');
+  localStorage.removeItem('uid_email');
+  data=[];
+  showAuthScreen();
+}
+
+function saveSession(session){
+  currentSession=session;
+  localStorage.setItem('sb_session',JSON.stringify(session));
+  const uid=getUID();
+  if(uid)localStorage.setItem('uid',uid);
+  if(session?.user?.email)localStorage.setItem('uid_email',session.user.email);
+}
+
+async function ensureSession(){return !!currentSession;}
+
 function rowToGoal(r){
   return{
 
