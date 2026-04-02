@@ -508,21 +508,15 @@ const VT_ACTIVE={grid:'act-gallery',linear:'act-list',roadmap:'act-roadmap',cale
 const SB_URL='https://rlmholuhmxipwmzhyncs.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsbWhvbHVobXhpcHdtemh5bmNzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwODU0MjYsImV4cCI6MjA5MDY2MTQyNn0.35mY7xf9uq9zD59bYELNP07gqTU7d87KcTtJ9FQSbPk';
 
-/* Use official Supabase JS client — handles auth/tokens automatically */
-const {createClient}=window.supabase;
-const sb=createClient(SB_URL,SB_KEY,{
-  auth:{
-    persistSession:true,
-    autoRefreshToken:true,
-    detectSessionInUrl:false,
-    storage:localStorage
-  }
+const sb=supabase.createClient(SB_URL,SB_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}
 });
 
 let currentUser=null;
 
 function getToken(){
-  return sb.auth.session?.access_token||SB_KEY;
+  const s=sb.auth.session();
+  return s?.access_token||SB_KEY;
 }
 
 async function sbFetch(path,opts={}){
