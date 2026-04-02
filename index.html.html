@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Goal Tracker Motivational</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#ffffff;--bg2:#f5f5f4;--bg3:#efede8;--text:#1a1a1a;--text2:#6b6b6b;--text3:#9e9d99;--border:rgba(0,0,0,.1);--border2:rgba(0,0,0,.18);--radius:8px}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;--text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;--border:rgba(255,255,255,.1);--border2:rgba(255,255,255,.18)}}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh}
+.app{padding:1rem;max-width:1400px;margin:0 auto}
+@media(min-width:768px){.app{padding:1.5rem 2rem}}
+@media(min-width:1200px){.app{padding:2rem 3rem}}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:8px}
+.app-title{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.2;color:var(--text)}
+@media(min-width:768px){.app-title{font-size:24px}}
+.app-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.btn{font-size:12px;padding:7px 16px;border:1px solid var(--border2);border-radius:999px;background:transparent;color:var(--text);cursor:pointer;white-space:nowrap;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.btn:hover{background:var(--bg2)}
+.btn.accent{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn.accent:hover{background:#333}
+@media(prefers-color-scheme:dark){.btn.accent{background:#f2f2f7;color:#1a1a1a}}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(100px);background:#1a1a1a;color:#fff;font-size:12px;font-weight:500;padding:8px 18px;border-radius:999px;z-index:9999;transition:transform .3s ease;font-family:inherit;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(prefers-color-scheme:dark){.toast{background:#f2f2f7;color:#1a1a1a}}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;max-width:600px}
+@media(max-width:400px){.stats-row{grid-template-columns:repeat(2,1fr);gap:6px}}
+.stat{border-radius:12px;padding:.55rem .65rem;cursor:pointer;border:2px solid transparent;transition:border-color .15s;-webkit-tap-highlight-color:transparent}
+.stat-n{font-size:17px;font-weight:700}
+.stat-l{font-size:9px;margin-top:1px;font-weight:600}
+.stat-all{background:#F1EFE8}.stat-all .stat-n{color:#2C2C2A}.stat-all .stat-l{color:#5F5E5A}.stat-all.active-stat{border-color:#888780}
+.stat-inp{background:#E6F1FB}.stat-inp .stat-n{color:#0C447C}.stat-inp .stat-l{color:#185FA5}.stat-inp.active-stat{border-color:#378ADD}
+.stat-done{background:#E1F5EE}.stat-done .stat-n{color:#085041}.stat-done .stat-l{color:#0F6E56}.stat-done.active-stat{border-color:#1D9E75}
+.stat-exp{background:#FCEBEB}.stat-exp .stat-n{color:#791F1F}.stat-exp .stat-l{color:#A32D2D}.stat-exp.active-stat{border-color:#E24B4A}
+.view-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:1rem;max-width:500px}
+.vt{font-size:11px;padding:8px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;text-align:center;transition:all .15s;font-weight:600;font-family:inherit;line-height:1.2;-webkit-tap-highlight-color:transparent}
+.vt-icon{display:block;font-size:16px;margin-bottom:2px}
+.vt.act-gallery{background:#E6F1FB;border-color:#378ADD;color:#0C447C}
+.vt.act-list{background:#E1F5EE;border-color:#1D9E75;color:#085041}
+.vt.act-roadmap{background:#FAEEDA;border-color:#EF9F27;color:#633806}
+.vt.act-calendar{background:#EEEDFE;border-color:#7F77DD;color:#3C3489}
+.year-divider{display:flex;align-items:center;gap:10px;margin-bottom:.75rem}
+.year-text{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.year-line{flex:1;height:0.5px;background:var(--border)}
+.grid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));margin-bottom:1.5rem}
+@media(min-width:900px){.grid{grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.25rem}}
+@media(min-width:1200px){.grid{grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:1.5rem}}
+@media(max-width:480px){.grid{grid-template-columns:1fr}}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent}
+.card:active{transform:scale(.98)}
+.card-img-wrap{position:relative;width:100%;height:190px;overflow:hidden;background:#111}
+@media(min-width:768px){.card-img-wrap{height:220px}}
+@media(min-width:1200px){.card-img-wrap{height:240px}}
+.card-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0}
+.no-img{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg2);gap:5px;color:var(--text3);font-size:11px}
+.status-pill{position:absolute;top:10px;left:10px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;z-index:2}
+.prog-overlay{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.2);z-index:2}
+.prog-fill-img{height:100%}
+.card-mascot{position:absolute;bottom:8px;right:10px;z-index:3}
+.mascot-bubble{background:rgba(255,255,255,.92);border-radius:12px;padding:4px 8px;display:flex;align-items:center;gap:6px;border:1px solid rgba(255,255,255,.6)}
+.mascot-mini{position:relative;flex-shrink:0}
+.gm-body{width:28px;height:34px;position:relative;animation:float-sad 2.5s ease-in-out infinite}
+@keyframes float-sad{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(3px) rotate(3deg)}}
+.gm-head{width:28px;height:20px;background:#F09595;border-radius:14px 14px 0 0;position:absolute;top:0}
+.gm-skirt{display:flex;position:absolute;top:17px;width:28px}
+.gm-w{width:7px;height:14px;background:#F09595;border-radius:0 0 4px 4px}
+.gm-eye{width:4px;height:5px;background:#791F1F;border-radius:50%;position:absolute;top:7px}
+.gm-el{left:6px}.gm-er{right:6px}
+.gm-mouth{width:8px;height:4px;border:1.5px solid #791F1F;border-top:none;border-radius:0 0 5px 5px;position:absolute;top:13px;left:50%;transform:translateX(-50%)}
+.gm-tear{width:2px;height:5px;background:#85B7EB;border-radius:0 0 2px 2px;position:absolute;top:12px;left:8px;animation:tear 2s ease-in infinite}
+@keyframes tear{0%,60%{opacity:0}70%{opacity:1}100%{opacity:0;transform:translateY(8px)}}
+.rm-wrap{width:28px;height:36px;position:relative}
+.rm-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);animation:run-body .5s ease-in-out infinite alternate}
+@keyframes run-body{from{transform:translateX(-50%) rotate(-4deg)}to{transform:translateX(-50%) rotate(4deg)}}
+.rm-head{width:14px;height:14px;background:#378ADD;border-radius:50%;position:relative;left:50%;transform:translateX(-50%)}
+.rm-eye{width:2px;height:2px;background:#fff;border-radius:50%;position:absolute;top:4px}
+.rm-el{left:3px}.rm-er{right:3px}
+.rm-smile{width:5px;height:2px;border:1px solid #fff;border-top:none;border-radius:0 0 3px 3px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+.rm-torso{width:12px;height:12px;background:#378ADD;border-radius:3px;margin:1px auto 0;position:relative}
+.rm-arm{width:4px;height:8px;background:#378ADD;border-radius:2px;position:absolute;top:1px}
+.rm-al{left:-4px;transform-origin:top center;animation:arm-l .5s ease-in-out infinite alternate}
+.rm-ar{right:-4px;transform-origin:top center;animation:arm-r .5s ease-in-out infinite alternate}
+@keyframes arm-l{from{transform:rotate(-40deg)}to{transform:rotate(40deg)}}
+@keyframes arm-r{from{transform:rotate(40deg)}to{transform:rotate(-40deg)}}
+.rm-leg{width:5px;height:10px;background:#378ADD;border-radius:3px;position:absolute;bottom:0}
+.rm-ll{left:1px;transform-origin:top center;animation:leg-l .5s ease-in-out infinite alternate}
+.rm-lr{right:1px;transform-origin:top center;animation:leg-r .5s ease-in-out infinite alternate}
+@keyframes leg-l{from{transform:rotate(-35deg)}to{transform:rotate(35deg)}}
+@keyframes leg-r{from{transform:rotate(35deg)}to{transform:rotate(-35deg)}}
+.cm-wrap{width:28px;height:36px;position:relative}
+.cm-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);animation:jump 1.2s ease-in-out infinite}
+@keyframes jump{0%,100%{transform:translateX(-50%) translateY(0)}40%{transform:translateX(-50%) translateY(-7px)}60%{transform:translateX(-50%) translateY(-5px)}}
+.cm-head{width:14px;height:14px;background:#1D9E75;border-radius:50%;position:relative;left:50%;transform:translateX(-50%)}
+.cm-eye{width:2px;height:2px;background:#fff;border-radius:50%;position:absolute;top:4px}
+.cm-el{left:3px}.cm-er{right:3px}
+.cm-smile{width:6px;height:3px;border:1px solid #fff;border-top:none;border-radius:0 0 4px 4px;position:absolute;top:8px;left:50%;transform:translateX(-50%)}
+.cm-torso{width:12px;height:12px;background:#1D9E75;border-radius:3px;margin:1px auto 0;position:relative}
+.cm-arm{width:4px;height:10px;background:#1D9E75;border-radius:2px;position:absolute;top:-2px}
+.cm-al{left:-4px;transform:rotate(-140deg);transform-origin:top center;animation:cheer-l 1.2s ease-in-out infinite}
+.cm-ar{right:-4px;transform:rotate(140deg);transform-origin:top center;animation:cheer-r 1.2s ease-in-out infinite}
+@keyframes cheer-l{0%,100%{transform:rotate(-140deg)}50%{transform:rotate(-120deg)}}
+@keyframes cheer-r{0%,100%{transform:rotate(140deg)}50%{transform:rotate(120deg)}}
+.cm-leg{width:5px;height:9px;background:#1D9E75;border-radius:3px;position:absolute;bottom:0}
+.cm-ll{left:1px}.cm-lr{right:1px}
+.cm-star{position:absolute;animation:star-pop 1.5s linear infinite}
+.cm-star svg{width:8px;height:8px}
+.css1{top:-4px;left:0}.css2{top:-5px;right:-2px;animation-delay:.4s}
+@keyframes star-pop{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+.card-body{padding:.8rem .9rem .9rem}
+.card-bottom-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.card-left{flex:1;min-width:0}
+.date-day{font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em}
+.date-day.normal{color:var(--text)}.date-day.expired{color:#E24B4A}
+.date-my{font-size:11px;margin-top:1px;text-transform:uppercase;letter-spacing:.05em;font-weight:500}
+.date-my.normal{color:var(--text2)}.date-my.expired{color:#E24B4A;font-weight:700}
+.divider-h{height:0.5px;background:var(--border);margin:7px 0}
+.card-cat{font-size:9px;color:var(--text3);margin-bottom:2px;text-transform:uppercase;letter-spacing:.05em;font-weight:600}
+.card-title{font-size:14px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:2px}
+.card-desc{font-size:11px;color:var(--text2);line-height:1.5}
+.prog-row{display:flex;align-items:center;gap:6px;margin-top:7px}
+.prog-track{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-bar{height:100%;border-radius:2px}
+.prog-pct{font-size:10px;font-weight:700;color:var(--text2);min-width:26px;text-align:right}
+.cd-widget{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:10px;padding:6px 8px;min-width:62px;flex-shrink:0;border:1px solid}
+.cd-widget.green{background:#E1F5EE;border-color:#5DCAA5}.cd-widget.orange{background:#FAEEDA;border-color:#EF9F27}.cd-widget.red{background:#FCEBEB;border-color:#F09595}.cd-widget.done{background:#E1F5EE;border-color:#5DCAA5}
+.cd-big{font-size:18px;font-weight:700;line-height:1;text-align:center}
+.cd-big.green{color:#085041}.cd-big.orange{color:#633806}.cd-big.red{color:#791F1F}.cd-big.done{color:#085041}
+.cd-label{font-size:8px;text-align:center;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;font-weight:600}
+.cd-label.green{color:#0F6E56}.cd-label.orange{color:#854F0B}.cd-label.red{color:#A32D2D}.cd-label.done{color:#0F6E56}
+.cd-sub{font-size:8px;text-align:center;margin-top:3px;padding-top:3px;border-top:1px solid;line-height:1.3;font-weight:500}
+.cd-sub.green{color:#0F6E56;border-color:#9FE1CB}.cd-sub.orange{color:#854F0B;border-color:#FAC775}.cd-sub.red{color:#A32D2D;border-color:#F7C1C1}
+.linear-list{margin-bottom:1.5rem}
+.linear-card{background:var(--bg);border:1px solid var(--border);border-radius:14px;margin-bottom:.625rem;overflow:hidden;cursor:pointer;display:flex;min-height:100px;transition:transform .1s;-webkit-tap-highlight-color:transparent}
+.linear-card:active{transform:scale(.99)}
+.linear-img{width:100px;flex-shrink:0;position:relative;background:#111;overflow:hidden}
+@media(min-width:768px){.linear-img{width:160px}}
+@media(min-width:1200px){.linear-img{width:200px}}
+@media(max-width:400px){.linear-img{width:80px}}
+.linear-img img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0}
+.linear-body{flex:1;padding:.7rem .875rem;display:flex;gap:8px;align-items:flex-start;min-width:0}
+.linear-date-block{text-align:center;min-width:34px;flex-shrink:0}
+.linear-day{font-size:22px;font-weight:700;line-height:1}
+.linear-day.normal{color:var(--text)}.linear-day.expired{color:#E24B4A}
+.linear-my{font-size:9px;text-transform:uppercase;letter-spacing:.04em;margin-top:1px;font-weight:600}
+.linear-my.normal{color:var(--text2)}.linear-my.expired{color:#E24B4A;font-weight:700}
+.linear-vline{width:0.5px;background:var(--border);align-self:stretch;flex-shrink:0}
+.linear-info{flex:1;min-width:0}
+.linear-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.linear-desc{font-size:11px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.roadmap-wrap{margin-bottom:1.5rem;overflow-x:auto;padding-bottom:1rem;-webkit-overflow-scrolling:touch}
+.roadmap-track{display:flex;align-items:flex-start;min-width:max-content;padding:0 4px}
+.rmc{flex:1;height:2px;background:var(--border);margin-top:20px;min-width:16px}
+.rmc.done-conn{background:#1D9E75}
+.rm-item{display:flex;flex-direction:column;align-items:center;width:158px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+@media(min-width:768px){.rm-item{width:220px}}
+@media(min-width:1200px){.rm-item{width:260px}}
+.rm-node{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid;flex-shrink:0;z-index:1}
+.rm-node.done-node{border-color:#1D9E75;background:#E1F5EE;color:#0F6E56}
+.rm-node.inp-node{border-color:#378ADD;background:#E6F1FB;color:#185FA5}
+.rm-node.exp-node{border-color:#E24B4A;background:#FCEBEB;color:#A32D2D}
+.rm-card{margin-top:10px;background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;width:146px}
+@media(min-width:768px){.rm-card{width:200px}}
+@media(min-width:1200px){.rm-card{width:240px}}
+.rm-cimg{width:100%;height:86px;position:relative;background:#111;overflow:hidden}
+@media(min-width:768px){.rm-cimg{height:130px}}
+@media(min-width:1200px){.rm-cimg{height:160px}}
+.rm-cimg img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0}
+.rm-cbody{padding:.5rem .6rem .65rem;position:relative}
+.rm-date{font-size:18px;font-weight:700;line-height:1}
+.rm-date.normal{color:var(--text)}.rm-date.expired{color:#E24B4A}
+.rm-my{font-size:9px;text-transform:uppercase;letter-spacing:.04em;margin-top:1px;font-weight:600}
+.rm-my.normal{color:var(--text2)}.rm-my.expired{color:#E24B4A;font-weight:700}
+.rm-title{font-size:11px;font-weight:700;color:var(--text);margin-top:3px;line-height:1.3}
+.rm-prog{height:3px;background:var(--border);border-radius:2px;margin-top:5px;overflow:hidden}
+.rm-prog-fill{height:100%;border-radius:2px}
+.rm-mascot{position:absolute;bottom:5px;right:5px}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.cal-month-title{font-size:15px;font-weight:700;color:var(--text)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1rem}
+.cal-dow{font-size:9px;color:var(--text3);text-align:center;padding:3px 0;text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+.cal-day{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--bg);min-height:88px}
+@media(min-width:768px){.cal-day{min-height:130px}}
+@media(min-width:1200px){.cal-day{min-height:160px}}
+@media(max-width:480px){.cal-day{min-height:68px}}
+.cal-day.other-month{background:var(--bg2);opacity:.3;min-height:40px}
+.cal-day.today{border-color:#378ADD;border-width:1.5px}
+.cal-day-header{padding:4px 5px 2px;display:flex;align-items:center;justify-content:space-between}
+.cal-day-num{font-size:10px;font-weight:700;color:var(--text2)}
+.cal-day-num.today-num{color:#185FA5}
+.cal-event{cursor:pointer;border-radius:5px;overflow:hidden;margin:0 3px 3px;border:1px solid var(--border);-webkit-tap-highlight-color:transparent}
+.cal-eimg{width:100%;height:44px;position:relative;overflow:hidden;background:#111}
+@media(min-width:768px){.cal-eimg{height:80px}}
+@media(min-width:1200px){.cal-eimg{height:100px}}
+@media(max-width:480px){.cal-eimg{height:34px}}
+.cal-eimg img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0}
+.cal-stripe{height:2px;width:100%}
+.cal-ebody{padding:3px 4px 4px}
+.cal-etitle{font-size:9px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+.cal-edesc{font-size:8px;color:var(--text2);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:2px}
+.cal-cd{font-size:8px;font-weight:700;padding:1px 4px;border-radius:999px;display:inline-block}
+.cal-cd.green{background:#E1F5EE;color:#085041}.cal-cd.orange{background:#FAEEDA;color:#633806}.cal-cd.red-cd{background:#FCEBEB;color:#791F1F}.cal-cd.done{background:#E1F5EE;color:#085041}.cal-cd.ov{background:#FCEBEB;color:#791F1F}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-start;justify-content:center;padding:1rem;z-index:1000;overflow-y:auto}
+.overlay.open{display:flex}
+.vault-modal{background:var(--bg);border:1px solid var(--border);border-radius:20px;width:min(700px,100%);overflow:hidden;margin:auto}
+@media(min-width:900px){.vault-modal{width:min(860px,90%)}}
+.vault-hero{position:relative;height:210px;overflow:hidden;background:#111}
+.vault-hero img{width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0}
+.vault-hero-no{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg2);gap:6px;cursor:pointer;color:var(--text3);font-size:12px}
+.vault-hero-overlay{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.7));padding:.875rem 1rem;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;z-index:2}
+.vault-title{font-size:18px;font-weight:700;color:#fff;line-height:1.2}
+.vault-pill{font-size:10px;padding:3px 8px;border-radius:999px;margin-top:3px;display:inline-block;font-weight:700}
+.vcd{border-radius:10px;padding:7px 10px;text-align:center;min-width:68px;flex-shrink:0}
+.vcd.green{background:rgba(29,158,117,.85)}.vcd.orange{background:rgba(186,117,23,.85)}.vcd.red{background:rgba(226,75,74,.85)}.vcd.done{background:rgba(29,158,117,.85)}
+.vcd-big{font-size:22px;font-weight:700;color:#fff;line-height:1}
+.vcd-label{font-size:8px;color:rgba(255,255,255,.85);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;font-weight:600}
+.vcd-sub{font-size:9px;color:rgba(255,255,255,.85);margin-top:3px;border-top:1px solid rgba(255,255,255,.3);padding-top:3px;font-weight:500}
+.vault-body{padding:1rem}
+.vsec{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.6rem}
+.progress-section{background:var(--bg2);border-radius:12px;padding:.875rem 1rem;margin-bottom:1rem}
+.progress-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.progress-title{font-size:12px;font-weight:700;color:var(--text)}
+.progress-pct-badge{font-size:16px;font-weight:700}
+.progress-slider{width:100%;height:6px;border-radius:3px;outline:none;cursor:pointer;appearance:none;-webkit-appearance:none;border:none;background:var(--border)}
+.progress-quick{display:flex;gap:5px;margin-top:.6rem;flex-wrap:wrap}
+.prog-quick-btn{font-size:10px;padding:4px 10px;border-radius:999px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600;transition:all .1s}
+.prog-quick-btn:hover{background:var(--bg)}
+.prog-quick-btn.active-q{color:#fff;border-color:transparent}
+.vault-prog{height:4px;background:var(--border);border-radius:2px;margin-bottom:1rem;overflow:hidden}
+.vault-prog-fill{height:100%;border-radius:2px;transition:width .3s}
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:1rem}
+.photo-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:block;cursor:pointer}
+.photo-add{width:100%;aspect-ratio:1;border-radius:8px;border:1px dashed var(--border2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--bg2);color:var(--text3);font-size:10px;gap:3px;font-weight:600}
+.prompt-block{background:var(--bg2);border-radius:12px;padding:.875rem 1rem;margin-bottom:.875rem}
+.prompt-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.prompt-icon{font-size:14px}
+.prompt-textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;min-height:72px;line-height:1.5}
+.prompt-textarea:focus{outline:none;border-color:var(--border2)}
+.prompt-textarea::placeholder{color:var(--text3);font-style:italic}
+.prompt-save-btn{font-size:11px;padding:5px 14px;border:1px solid var(--border2);border-radius:999px;background:transparent;color:var(--text2);cursor:pointer;font-family:inherit;font-weight:600;margin-top:6px;transition:all .15s}
+.prompt-save-btn:hover{background:var(--bg);color:var(--text)}
+.prompt-save-btn.saved{background:#E1F5EE;color:#0F6E56;border-color:#1D9E75}
+.vault-footer{display:flex;gap:7px;justify-content:space-between;align-items:center;padding-top:.875rem;border-top:1px solid var(--border);margin-top:.875rem}
+.form-modal{background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:1.25rem;width:min(500px,100%);margin:auto}
+.form-modal h2{font-size:15px;font-weight:700;color:var(--text);margin-bottom:1rem}
+.fg{margin-bottom:.8rem}
+.fg label{display:block;font-size:10px;color:var(--text3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+.fg input,.fg textarea,.fg select{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);font-family:inherit}
+.fg textarea{resize:vertical;min-height:58px}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:.875rem}
+.img-upload-area{width:100%;height:110px;border:1px dashed var(--border2);border-radius:var(--radius);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;background:var(--bg2);gap:5px;position:relative;overflow:hidden;color:var(--text3);font-size:11px}
+.img-upload-area img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0}
+.img-input{display:none}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--text3);font-size:13px}
+.celebration{display:none;min-height:240px;background:rgba(0,0,0,.65);align-items:center;justify-content:center;border-radius:20px;margin-bottom:1rem;flex-direction:column;gap:10px;padding:1.5rem}
+.celebration.show{display:flex}
+.celeb-title{font-size:18px;font-weight:700;color:#fff;text-align:center}
+.celeb-sub{font-size:13px;color:rgba(255,255,255,.8);text-align:center}
+#confetti-canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;display:none}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast">Saved ✓</div>
+<canvas id="confetti-canvas"></canvas>
+
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="app-title">🎯 Goal Tracker Motivational</div>
+      <div class="app-sub">Every change saved automatically</div>
+    </div>
+    <button class="btn accent" onclick="openForm()">+ New Goal</button>
+  </div>
+  <div class="stats-row">
+    <div class="stat stat-all active-stat" id="stat-all" onclick="setFilter('all',this)"><div class="stat-n" id="sn-all">0</div><div class="stat-l">All</div></div>
+    <div class="stat stat-inp" id="stat-inp" onclick="setFilter('in-progress',this)"><div class="stat-n" id="sn-inp">0</div><div class="stat-l">In Progress</div></div>
+    <div class="stat stat-done" id="stat-done" onclick="setFilter('done',this)"><div class="stat-n" id="sn-done">0</div><div class="stat-l">Completed</div></div>
+    <div class="stat stat-exp" id="stat-exp" onclick="setFilter('expired',this)"><div class="stat-n" id="sn-exp">0</div><div class="stat-l">Overdue</div></div>
+  </div>
+  <div class="view-tabs">
+    <button class="vt act-gallery" id="vt-gallery" onclick="setView('grid',this)"><span class="vt-icon">🖼</span>Gallery</button>
+    <button class="vt" id="vt-list" onclick="setView('linear',this)"><span class="vt-icon">📋</span>List</button>
+    <button class="vt" id="vt-roadmap" onclick="setView('roadmap',this)"><span class="vt-icon">🗺</span>Roadmap</button>
+    <button class="vt" id="vt-calendar" onclick="setView('calendar',this)"><span class="vt-icon">📅</span>Calendar</button>
+  </div>
+  <div id="main"></div>
+</div>
+
+<div class="celebration" id="celebration">
+  <div style="position:relative;width:50px;height:60px;margin:0 auto">
+    <div class="cm-wrap" style="transform:scale(1.6);transform-origin:center top;margin-top:12px">
+      <div class="cm-star css1"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="#EF9F27" stroke="#BA7517" stroke-width="1.5"/></svg></div>
+      <div class="cm-star css2"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="#EF9F27" stroke="#BA7517" stroke-width="1.5"/></svg></div>
+      <div class="cm-bg"><div class="cm-head" style="position:relative"><div class="cm-eye cm-el"></div><div class="cm-eye cm-er"></div><div class="cm-smile"></div></div><div class="cm-torso"><div class="cm-arm cm-al"></div><div class="cm-arm cm-ar"></div><div class="cm-leg cm-ll"></div><div class="cm-leg cm-lr"></div></div></div>
+    </div>
+  </div>
+  <div class="celeb-title">Goal Completed! 🎊</div>
+  <div class="celeb-sub" id="celeb-sub">You're unstoppable!</div>
+  <button class="btn" style="background:#1D9E75;color:#fff;border-color:#1D9E75;margin-top:4px" onclick="hideCelebration()">Keep going!</button>
+</div>
+
+<!-- VAULT -->
+<div class="overlay" id="vault-overlay" onclick="closeVaultOut(event)">
+  <div class="vault-modal">
+    <div class="vault-hero" id="vh">
+      <div class="vault-hero-no" id="vh-no" onclick="document.getElementById('hero-input').click()">
+        <span style="font-size:24px">📷</span>Tap to add cover photo — saved instantly
+      </div>
+      <div class="vault-hero-overlay" id="vh-overlay">
+        <div><div class="vault-title" id="vh-title"></div><span class="vault-pill" id="vh-pill"></span></div>
+        <div class="vcd" id="vch"></div>
+      </div>
+    </div>
+    <input type="file" id="hero-input" accept="image/*" class="img-input" onchange="handleHeroUpload(event)">
+    <div class="vault-body">
+      <div class="progress-section" id="progress-section">
+        <div class="progress-top-row">
+          <span class="progress-title">Progress</span>
+          <span class="progress-pct-badge" id="prog-badge">0%</span>
+        </div>
+        <input type="range" class="progress-slider" id="prog-slider" min="0" max="100" value="0" step="1" oninput="onSliderChange(this.value)">
+        <div class="progress-quick">
+          <button class="prog-quick-btn" onclick="setProgress(0)">0%</button>
+          <button class="prog-quick-btn" onclick="setProgress(25)">25%</button>
+          <button class="prog-quick-btn" onclick="setProgress(50)">50%</button>
+          <button class="prog-quick-btn" onclick="setProgress(75)">75%</button>
+          <button class="prog-quick-btn" onclick="setProgress(100)">Done ✓</button>
+        </div>
+      </div>
+      <div class="vault-prog"><div class="vault-prog-fill" id="vp-fill"></div></div>
+      <div class="vsec">Visualization — max 3 photos, tap to remove</div>
+      <div class="photo-grid" id="photo-grid"></div>
+
+      <div class="vsec" style="margin-top:.25rem">My Goal Journey</div>
+
+      <div class="prompt-block">
+        <div class="prompt-label"><span class="prompt-icon">🎯</span>Why do I want this goal?</div>
+        <textarea class="prompt-textarea" id="prompt-why" placeholder="What is the deeper reason behind this goal? What drives you?" oninput="autoSavePrompt('why',this.value)"></textarea>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label"><span class="prompt-icon">⚡</span>What are my advantages?</div>
+        <textarea class="prompt-textarea" id="prompt-advantages" placeholder="What skills, resources or strengths do you have to achieve this?" oninput="autoSavePrompt('advantages',this.value)"></textarea>
+      </div>
+
+      <div class="prompt-block">
+        <div class="prompt-label"><span class="prompt-icon">🛡</span>Challenges & how I'll overcome them</div>
+        <textarea class="prompt-textarea" id="prompt-challenges" placeholder="What obstacles might appear? How will you deal with each one?" oninput="autoSavePrompt('challenges',this.value)"></textarea>
+      </div>
+
+      <div class="prompt-block" style="background:linear-gradient(135deg,#E1F5EE,#E6F1FB)">
+        <div class="prompt-label" style="color:#0F6E56"><span class="prompt-icon">✨</span>My motivational phrase</div>
+        <textarea class="prompt-textarea" id="prompt-phrase" placeholder="Write a phrase that reminds you why you started..." oninput="autoSavePrompt('phrase',this.value)" style="background:rgba(255,255,255,.7);min-height:56px;font-style:italic;font-weight:600"></textarea>
+      </div>
+      <div class="vault-footer">
+        <button class="btn" style="font-size:11px;color:#A32D2D;border-color:#F09595" onclick="deleteFromVault()">Delete Goal</button>
+        <div style="display:flex;gap:7px">
+          <button class="btn" onclick="openFormFromVault()">Edit Details</button>
+          <button class="btn accent" onclick="closeVault()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div class="overlay" id="form-overlay" onclick="closeFormOut(event)">
+  <div class="form-modal">
+    <h2 id="form-title">New Goal</h2>
+    <div class="fg">
+      <label>Cover Photo</label>
+      <div class="img-upload-area" id="preview-wrap" onclick="document.getElementById('main-img-input').click()">
+        <span style="font-size:20px">📷</span>Tap to upload a photo
+      </div>
+      <input type="file" id="main-img-input" accept="image/*" class="img-input" onchange="handleMainImgUpload(event)">
+    </div>
+    <div class="fr2">
+      <div class="fg"><label>Title</label><input id="f-title" type="text" placeholder="Goal name"></div>
+      <div class="fg"><label>Due Date</label><input id="f-date" type="date"></div>
+    </div>
+    <div class="fg"><label>Description</label><textarea id="f-desc" placeholder="What is this goal about?"></textarea></div>
+    <div class="fr2">
+      <div class="fg"><label>Category</label>
+        <select id="f-cat">
+          <option value="personal">Personal</option><option value="work">Work</option>
+          <option value="health">Health</option><option value="education">Education</option>
+          <option value="finance">Finance</option><option value="travel">Travel</option><option value="other">Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Status</label>
+        <select id="f-status"><option value="in-progress">In Progress</option><option value="done">Completed</option></select>
+      </div>
+    </div>
+    <div class="fg"><label>Notes</label><textarea id="f-notes" placeholder="Links, resources, ideas..."></textarea></div>
+    <div class="ma">
+      <button class="btn" onclick="closeForm()">Cancel</button>
+      <button class="btn accent" onclick="saveMile()">Save Goal</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="vault-photo-input" accept="image/*" class="img-input" onchange="handleVaultPhoto(event)">
+
+<script>
+const SC={'in-progress':{pill:'#E6F1FB',pillText:'#185FA5',bar:'#378ADD',label:'In Progress'},done:{pill:'#E1F5EE',pillText:'#0F6E56',bar:'#1D9E75',label:'Completed'},expired:{pill:'#FCEBEB',pillText:'#791F1F',bar:'#E24B4A',label:'Overdue'}};
+const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MNF=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const VT_ACTIVE={grid:'act-gallery',linear:'act-list',roadmap:'act-roadmap',calendar:'act-calendar'};
+const STORE_KEY='gtm_v1';
+
+let data=JSON.parse(localStorage.getItem(STORE_KEY)||'null')||[];
+let nextId=data.reduce((m,x)=>Math.max(m,x.id),0)+1;
+let editId=null,filterV='all',viewV='grid',activeVaultId=null,pendingMainImg=null,wasInProgress=false;
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth();
+let toastTimer=null;
+
+function save(){
+  try{localStorage.setItem(STORE_KEY,JSON.stringify(data));showToast('Saved ✓');}
+  catch(e){showToast('⚠️ Storage full — clear old photos');}
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800);
+}
+function isExpired(m){return m.status!=='done'&&m.date&&new Date(m.date+'T23:59:59')<new Date();}
+function resolvedStatus(m){return isExpired(m)?'expired':m.status;}
+function setFilter(v,el){filterV=v;document.querySelectorAll('.stat').forEach(s=>s.classList.remove('active-stat'));el.classList.add('active-stat');render();}
+function setView(v,el){viewV=v;document.querySelectorAll('.vt').forEach(b=>b.className='vt');el.classList.add(VT_ACTIVE[v]);render();}
+function cdInfo(d,s){
+  if(s==='done')return{cls:'done',big:'✓',label:'done',sub:null};
+  if(!d)return null;
+  const diff=new Date(d+'T23:59:59')-new Date();
+  if(diff<=0)return{cls:'red',big:'!',label:'overdue',sub:null,expired:true};
+  const days=Math.floor(diff/(1000*60*60*24)),hrs=Math.floor((diff%(1000*60*60*24))/(1000*60*60)),mins=Math.floor((diff%(1000*60*60))/(1000*60));
+  if(days>=30)return{cls:days>90?'green':'orange',big:days+'d',label:'left',sub:hrs+'h '+mins+'m'};
+  if(days>=1)return{cls:days>7?'orange':'red',big:days+'d',label:'left',sub:hrs+'h '+mins+'m'};
+  return{cls:'red',big:hrs+'h',label:'left',sub:mins+'m'};
+}
+function cdW(d,s){const i=cdInfo(d,s);if(!i)return'';return`<div class="cd-widget ${i.cls}"><div class="cd-big ${i.cls}">${i.big}</div><div class="cd-label ${i.cls}">${i.label}</div>${i.sub?`<div class="cd-sub ${i.cls}">${i.sub}</div>`:''}</div>`;}
+function cdS(d,s){const i=cdInfo(d,s);if(!i)return'';const cls=i.expired?'ov':i.cls==='done'?'done':i.cls==='red'?'red-cd':i.cls;return`<span class="cal-cd ${cls}">${i.expired?'⏰ Overdue':i.big+(i.sub?' · '+i.sub:'')}</span>`;}
+function dc(m){return isExpired(m)?'expired':'normal';}
+function parseDp(d){if(!d)return null;const dt=new Date(d+'T12:00:00');return{day:dt.getDate(),month:MN[dt.getMonth()],year:dt.getFullYear()};}
+function imgB(img){if(img)return`<img style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0" src="${img}" alt="" onerror="this.style.display='none'">`;return`<div class="no-img">📷<span style="font-size:9px">No photo</span></div>`;}
+function mascotMini(rs){
+  if(rs==='done')return`<div class="cm-wrap"><div class="cm-star css1"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="#EF9F27" stroke="#BA7517" stroke-width="1.5"/></svg></div><div class="cm-star css2"><svg viewBox="0 0 24 24"><polygon points="12,2 15,9 22,9 17,14 19,21 12,17 5,21 7,14 2,9 9,9" fill="#EF9F27" stroke="#BA7517" stroke-width="1.5"/></svg></div><div class="cm-bg"><div class="cm-head" style="position:relative"><div class="cm-eye cm-el"></div><div class="cm-eye cm-er"></div><div class="cm-smile"></div></div><div class="cm-torso"><div class="cm-arm cm-al"></div><div class="cm-arm cm-ar"></div><div class="cm-leg cm-ll"></div><div class="cm-leg cm-lr"></div></div></div></div>`;
+  if(rs==='expired')return`<div class="gm-body"><div class="gm-head"><div class="gm-eye gm-el"></div><div class="gm-eye gm-er"></div><div class="gm-mouth"></div><div class="gm-tear"></div></div><div class="gm-skirt"><div class="gm-w"></div><div class="gm-w"></div><div class="gm-w"></div><div class="gm-w"></div></div></div>`;
+  return`<div class="rm-wrap"><div class="rm-bg"><div class="rm-head" style="position:relative"><div class="rm-eye rm-el"></div><div class="rm-eye rm-er"></div><div class="rm-smile"></div></div><div class="rm-torso"><div class="rm-arm rm-al"></div><div class="rm-arm rm-ar"></div><div class="rm-leg rm-ll"></div><div class="rm-leg rm-lr"></div></div></div></div>`;
+}
+function mascotLabel(rs){if(rs==='done')return{text:'You did it!',color:'#0F6E56'};if(rs==='expired')return{text:"Don't give up!",color:'#A32D2D'};return{text:'Keep going!',color:'#185FA5'};}
+function filtered(){return[...data].filter(m=>{if(filterV==='all')return true;if(filterV==='expired')return isExpired(m);if(filterV==='in-progress')return m.status==='in-progress'&&!isExpired(m);return m.status===filterV;}).sort((a,b)=>a.date>b.date?1:-1);}
+function updateStats(){
+  document.getElementById('sn-all').textContent=data.length;
+  document.getElementById('sn-inp').textContent=data.filter(m=>m.status==='in-progress'&&!isExpired(m)).length;
+  document.getElementById('sn-done').textContent=data.filter(m=>m.status==='done').length;
+  document.getElementById('sn-exp').textContent=data.filter(m=>isExpired(m)).length;
+}
+function render(){
+  updateStats();
+  const main=document.getElementById('main');
+  if(viewV==='grid')main.innerHTML=renderGrid();
+  else if(viewV==='linear')main.innerHTML=renderLinear();
+  else if(viewV==='roadmap')main.innerHTML=renderRoadmap();
+  else main.innerHTML=renderCalendar();
+}
+function renderGrid(){
+  const list=filtered();
+  if(!list.length)return`<div class="empty">${data.length===0?'No goals yet. Tap "+ New Goal" to start!':'No goals in this category.'}</div>`;
+  const byYear={};list.forEach(m=>{const y=m.date?m.date.slice(0,4):'No date';(byYear[y]=byYear[y]||[]).push(m);});
+  let h='';
+  Object.keys(byYear).sort().forEach(yr=>{
+    h+=`<div class="year-divider"><div class="year-text">${yr}</div><div class="year-line"></div></div><div class="grid">`;
+    byYear[yr].forEach(m=>{
+      const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'],dp=parseDp(m.date),d=dc(m),ml=mascotLabel(rs);
+      h+=`<div class="card" onclick="openVault(${m.id})"><div class="card-img-wrap">${imgB(m.img)}<div class="status-pill" style="background:${sc.pill};color:${sc.pillText}">${sc.label}</div><div class="prog-overlay"><div class="prog-fill-img" style="width:${m.progress||0}%;background:${sc.bar}"></div></div><div class="card-mascot"><div class="mascot-bubble"><div class="mascot-mini">${mascotMini(rs)}</div><span style="font-size:9px;font-weight:700;color:${ml.color}">${ml.text}</span></div></div></div><div class="card-body"><div class="card-bottom-row"><div class="card-left">${dp?`<div class="date-day ${d}">${dp.day}</div><div class="date-my ${d}">${dp.month} · ${dp.year}</div>`:''}</div>${cdW(m.date,m.status)}</div><div class="divider-h"></div><div class="card-cat">${m.category||''}</div><div class="card-title">${m.title}</div><div class="card-desc">${m.desc||''}</div><div class="prog-row"><div class="prog-track"><div class="prog-bar" style="width:${m.progress||0}%;background:${sc.bar}"></div></div><span class="prog-pct">${m.progress||0}%</span></div></div></div>`;
+    });h+='</div>';
+  });return h;
+}
+function renderLinear(){
+  const list=filtered();if(!list.length)return`<div class="empty">${data.length===0?'No goals yet!':'No goals in this category.'}</div>`;
+  let h='<div class="linear-list">';
+  list.forEach(m=>{
+    const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'],dp=parseDp(m.date),d=dc(m),ml=mascotLabel(rs);
+    h+=`<div class="linear-card" onclick="openVault(${m.id})"><div class="linear-img">${imgB(m.img)}</div><div class="linear-body"><div class="linear-date-block">${dp?`<div class="linear-day ${d}">${dp.day}</div><div class="linear-my ${d}">${dp.month}<br>${dp.year}</div>`:''}</div><div class="linear-vline"></div><div class="linear-info"><div style="display:flex;align-items:center;gap:5px;margin-bottom:2px"><div class="mascot-mini" style="flex-shrink:0">${mascotMini(rs)}</div><div class="linear-title">${m.title}</div><span style="font-size:9px;padding:2px 7px;border-radius:999px;white-space:nowrap;background:${sc.pill};color:${sc.pillText};margin-left:auto;flex-shrink:0;font-weight:700">${sc.label}</span></div><div class="linear-desc">${m.desc||''}</div><div class="prog-row" style="margin-top:5px"><div class="prog-track"><div class="prog-bar" style="width:${m.progress||0}%;background:${sc.bar}"></div></div><span class="prog-pct">${m.progress||0}%</span></div></div><div style="flex-shrink:0;display:flex;align-items:center;padding-left:6px">${cdW(m.date,m.status)}</div></div></div>`;
+  });return h+'</div>';
+}
+function renderRoadmap(){
+  const list=filtered();if(!list.length)return`<div class="empty">${data.length===0?'No goals yet!':'No goals in this category.'}</div>`;
+  let h='<div class="roadmap-wrap"><div class="roadmap-track">';
+  list.forEach((m,i)=>{
+    const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'],dp=parseDp(m.date),d=dc(m);
+    const nc=rs==='done'?'done-node':rs==='expired'?'exp-node':'inp-node';
+    const initials=m.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+    if(i>0)h+=`<div class="rmc${m.status==='done'?' done-conn':''}"></div>`;
+    h+=`<div class="rm-item" onclick="openVault(${m.id})"><div class="rm-node ${nc}">${initials}</div><div class="rm-card"><div class="rm-cimg">${imgB(m.img)}</div><div class="rm-cbody">${dp?`<div class="rm-date ${d}">${dp.day}</div><div class="rm-my ${d}">${dp.month} ${dp.year}</div>`:''}<div class="rm-title">${m.title}</div><div class="rm-prog"><div class="rm-prog-fill" style="width:${m.progress||0}%;background:${sc.bar}"></div></div><div style="margin-top:5px">${cdW(m.date,m.status)}</div><div class="rm-mascot">${mascotMini(rs)}</div></div></div></div>`;
+  });return h+'</div></div>';
+}
+function renderCalendar(){
+  const now=new Date(),firstDay=new Date(calYear,calMonth,1),lastDay=new Date(calYear,calMonth+1,0),startDow=firstDay.getDay();
+  let h=`<div class="cal-header"><button class="btn" onclick="calPrev()">←</button><span class="cal-month-title">${MNF[calMonth]} ${calYear}</span><button class="btn" onclick="calNext()">→</button></div><div class="cal-grid">`;
+  DOW.forEach(d=>h+=`<div class="cal-dow">${d}</div>`);
+  for(let i=0;i<startDow;i++)h+=`<div class="cal-day other-month"></div>`;
+  for(let d=1;d<=lastDay.getDate();d++){
+    const isToday=d===now.getDate()&&calMonth===now.getMonth()&&calYear===now.getFullYear();
+    const dayMiles=data.filter(m=>{if(!m.date)return false;const dt=new Date(m.date+'T12:00:00');return dt.getDate()===d&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear;});
+    h+=`<div class="cal-day${isToday?' today':''}"><div class="cal-day-header"><span class="cal-day-num${isToday?' today-num':''}">${d}</span>${dayMiles.length?`<span style="font-size:8px;color:var(--text3)">${dayMiles.length}</span>`:''}</div>`;
+    dayMiles.slice(0,1).forEach(m=>{const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'];h+=`<div class="cal-event" onclick="openVault(${m.id})"><div class="cal-eimg">${m.img?`<img style="width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0" src="${m.img}" alt="">`:''}<div style="position:absolute;bottom:2px;right:2px;transform:scale(.65);transform-origin:bottom right">${mascotMini(rs)}</div></div><div class="cal-stripe" style="background:${sc.bar}"></div><div class="cal-ebody"><div class="cal-etitle">${m.title}</div><div class="cal-edesc">${m.desc||''}</div>${cdS(m.date,m.status)}</div></div>`;});
+    dayMiles.slice(1).forEach(m=>{const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'];h+=`<div style="cursor:pointer;color:${sc.pillText};background:${sc.pill};margin:0 3px 3px;border-radius:4px;padding:2px 5px;font-size:8px;font-weight:700" onclick="openVault(${m.id})">● ${m.title}</div>`;});
+    h+='</div>';
+  }
+  const rem=(7-((startDow+lastDay.getDate())%7))%7;
+  for(let i=0;i<rem;i++)h+=`<div class="cal-day other-month"></div>`;
+  return h+'</div>';
+}
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}render();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}render();}
+function sliderColor(v){if(v>=100)return'#1D9E75';if(v>=50)return'#378ADD';if(v>=25)return'#EF9F27';return'#E24B4A';}
+function onSliderChange(v){
+  v=parseInt(v);const m=data.find(x=>x.id===activeVaultId);if(!m)return;
+  m.progress=v;if(v===100&&m.status==='in-progress')m.status='done';
+  save();render();refreshSliderUI(v,m);
+  if(v===100&&m.status==='done')setTimeout(()=>showCelebration(m.title),200);
+}
+function setProgress(v){document.getElementById('prog-slider').value=v;onSliderChange(v);}
+function refreshSliderUI(v,m){
+  const col=sliderColor(v);
+  const slider=document.getElementById('prog-slider');if(slider)slider.style.background=`linear-gradient(to right,${col} ${v}%,var(--border) ${v}%)`;
+  const badge=document.getElementById('prog-badge');if(badge){badge.textContent=v+'%';badge.style.color=col;}
+  const fill=document.getElementById('vp-fill');if(fill){fill.style.width=v+'%';fill.style.background=col;}
+  document.querySelectorAll('.prog-quick-btn').forEach((b,i)=>{b.classList.remove('active-q');b.style.background='';b.style.borderColor='';if([0,25,50,75,100][i]===v){b.classList.add('active-q');b.style.background=col;b.style.borderColor=col;}});
+  let st=document.getElementById('slider-style');if(!st){st=document.createElement('style');st.id='slider-style';document.head.appendChild(st);}
+  st.textContent=`#prog-slider::-webkit-slider-thumb{background:${col};width:22px;height:22px;border-radius:50%;border:2px solid #fff;-webkit-appearance:none;cursor:pointer;}#prog-slider::-moz-range-thumb{background:${col};width:22px;height:22px;border-radius:50%;border:2px solid #fff;cursor:pointer;}`;
+  const ps=document.getElementById('progress-section');if(ps)ps.style.opacity=m&&m.status==='done'?'.65':'1';
+  const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'];
+  const pill=document.getElementById('vh-pill');if(pill){pill.textContent=sc.label;pill.style.background=sc.pill;pill.style.color=sc.pillText;}
+}
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');canvas.style.display='block';canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d'),pieces=[],C=['#E24B4A','#EF9F27','#378ADD','#1D9E75','#D4537E','#7F77DD'];
+  for(let i=0;i<120;i++)pieces.push({x:Math.random()*canvas.width,y:-10-Math.random()*200,r:Math.random()*5+2,c:C[Math.floor(Math.random()*C.length)],rot:Math.random()*360,vx:(Math.random()-.5)*5,vy:Math.random()*5+2,vr:Math.random()*7-3,s:Math.random()>.5?'rect':'circle'});
+  let frame=0;
+  function draw(){ctx.clearRect(0,0,canvas.width,canvas.height);pieces.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);ctx.fillStyle=p.c;if(p.s==='rect')ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);else{ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}ctx.restore();p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.vy+=.07;});frame++;if(frame<180)requestAnimationFrame(draw);else{canvas.style.display='none';}}
+  draw();
+}
+function showCelebration(title){document.getElementById('celeb-sub').textContent=`"${title}" — You're unstoppable! 🌟`;document.getElementById('celebration').classList.add('show');document.getElementById('celebration').scrollIntoView({behavior:'smooth',block:'start'});launchConfetti();}
+function hideCelebration(){document.getElementById('celebration').classList.remove('show');}
+function openVault(id){activeVaultId=id;renderVault();document.getElementById('vault-overlay').classList.add('open');}
+function closeVault(){document.getElementById('vault-overlay').classList.remove('open');activeVaultId=null;}
+function closeVaultOut(e){if(e.target===document.getElementById('vault-overlay'))closeVault();}
+function renderVault(){
+  const m=data.find(x=>x.id===activeVaultId);if(!m)return;
+  const rs=resolvedStatus(m),sc=SC[rs]||SC['in-progress'];
+  const vh=document.getElementById('vh'),no=document.getElementById('vh-no');
+  let img=vh.querySelector('img');
+  if(m.img){no.style.display='none';if(!img){img=document.createElement('img');img.style.cssText='width:100%;height:100%;object-fit:cover;display:block;position:absolute;top:0;left:0';vh.insertBefore(img,document.getElementById('vh-overlay'));}img.src=m.img;}
+  else{if(img)img.remove();no.style.display='flex';}
+  document.getElementById('vh-title').textContent=m.title;
+  const pill=document.getElementById('vh-pill');pill.textContent=sc.label;pill.style.background=sc.pill;pill.style.color=sc.pillText;
+  const info=cdInfo(m.date,m.status),vch=document.getElementById('vch');
+  if(info){vch.className='vcd '+info.cls;vch.innerHTML=`<div class="vcd-big">${info.big}</div><div class="vcd-label">${info.label}</div>${info.sub?`<div class="vcd-sub">${info.sub}</div>`:''}`;}
+  refreshSliderUI(m.progress||0,m);renderPhotoGrid(m);renderPrompts(m);
+}
+function handleHeroUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();r.onload=ev=>{const m=data.find(x=>x.id===activeVaultId);if(!m)return;m.img=ev.target.result;save();renderVault();render();};
+  r.readAsDataURL(file);e.target.value='';
+}
+function renderPhotoGrid(m){
+  const photos=m.photos||[];
+  const max=3;
+  let h='';
+  photos.slice(0,max).forEach((url,i)=>{h+=`<img class="photo-thumb" src="${url}" alt="" onerror="this.style.display='none'" onclick="removePhoto(${i})" title="Tap to remove">`;});
+  if(photos.length<max)h+=`<div class="photo-add" onclick="document.getElementById('vault-photo-input').click()"><span style="font-size:20px">+</span>Add photo<span style="font-size:9px">${photos.length}/${max}</span></div>`;
+  document.getElementById('photo-grid').innerHTML=h;
+}
+function handleVaultPhoto(e){
+  const file=e.target.files[0];if(!file)return;
+  const m=data.find(x=>x.id===activeVaultId);if(!m)return;
+  if((m.photos||[]).length>=3){showToast('Max 3 photos allowed');e.target.value='';return;}
+  const r=new FileReader();r.onload=ev=>{if(!m.photos)m.photos=[];m.photos.push(ev.target.result);save();renderPhotoGrid(m);};
+  r.readAsDataURL(file);e.target.value='';
+}
+function removePhoto(i){const m=data.find(x=>x.id===activeVaultId);if(!m)return;if(!confirm('Remove this photo?'))return;m.photos.splice(i,1);save();renderPhotoGrid(m);}
+function renderPrompts(m){
+  const prompts=m.prompts||{};
+  const why=document.getElementById('prompt-why');
+  const adv=document.getElementById('prompt-advantages');
+  const cha=document.getElementById('prompt-challenges');
+  const phr=document.getElementById('prompt-phrase');
+  if(why)why.value=prompts.why||'';
+  if(adv)adv.value=prompts.advantages||'';
+  if(cha)cha.value=prompts.challenges||'';
+  if(phr)phr.value=prompts.phrase||'';
+}
+function autoSavePrompt(key,val){
+  const m=data.find(x=>x.id===activeVaultId);if(!m)return;
+  if(!m.prompts)m.prompts={};
+  m.prompts[key]=val;
+  save();
+}
+function deleteFromVault(){if(!confirm('Delete this goal?'))return;const id=activeVaultId;data=data.filter(x=>x.id!==id);save();closeVault();render();}
+function openFormFromVault(){const id=activeVaultId;closeVault();editMile(id);}
+function handleMainImgUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();r.onload=ev=>{pendingMainImg=ev.target.result;const pw=document.getElementById('preview-wrap');pw.innerHTML='';const img=document.createElement('img');img.src=pendingMainImg;img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;border-radius:8px';pw.appendChild(img);};
+  r.readAsDataURL(file);
+}
+function openForm(reset=true){
+  if(reset){editId=null;pendingMainImg=null;wasInProgress=false;document.getElementById('form-title').textContent='New Goal';['f-title','f-desc','f-notes'].forEach(i=>document.getElementById(i).value='');document.getElementById('f-status').value='in-progress';document.getElementById('f-cat').value='personal';document.getElementById('f-date').value='';const pw=document.getElementById('preview-wrap');pw.innerHTML=`<span style="font-size:20px">📷</span>Tap to upload a photo`;}
+  document.getElementById('form-overlay').classList.add('open');
+}
+function closeForm(){document.getElementById('form-overlay').classList.remove('open');}
+function closeFormOut(e){if(e.target===document.getElementById('form-overlay'))closeForm();}
+function editMile(id){
+  const m=data.find(x=>x.id===id);if(!m)return;
+  editId=id;wasInProgress=m.status==='in-progress';pendingMainImg=m.img||null;
+  document.getElementById('form-title').textContent='Edit Goal';
+  document.getElementById('f-title').value=m.title||'';document.getElementById('f-date').value=m.date||'';document.getElementById('f-desc').value=m.desc||'';document.getElementById('f-cat').value=m.category||'personal';document.getElementById('f-status').value=m.status||'in-progress';document.getElementById('f-notes').value=m.notes||'';
+  const pw=document.getElementById('preview-wrap');
+  if(m.img){pw.innerHTML='';const img=document.createElement('img');img.src=m.img;img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;border-radius:8px';pw.appendChild(img);}
+  else pw.innerHTML=`<span style="font-size:20px">📷</span>Tap to upload a photo`;
+  openForm(false);
+}
+function saveMile(){
+  const title=document.getElementById('f-title').value.trim();if(!title){alert('Please enter a title.');return;}
+  const newStatus=document.getElementById('f-status').value;
+  const justCompleted=wasInProgress&&newStatus==='done';
+  const isNewDone=!editId&&newStatus==='done';
+  const existing=editId?data.find(x=>x.id===editId):null;
+  const obj={title,date:document.getElementById('f-date').value,desc:document.getElementById('f-desc').value.trim(),category:document.getElementById('f-cat').value,status:newStatus,progress:newStatus==='done'?100:(existing?.progress||0),img:pendingMainImg||'',notes:document.getElementById('f-notes').value.trim()};
+  if(editId){const i=data.findIndex(x=>x.id===editId);if(i>-1)data[i]={...data[i],...obj};}
+  else data.push({id:nextId++,photos:[],phrases:[],prompts:{},...obj});
+  save();closeForm();render();
+  if(justCompleted||isNewDone)setTimeout(()=>showCelebration(title),300);
+}
+render();
+</script>
+</body>
+</html>
